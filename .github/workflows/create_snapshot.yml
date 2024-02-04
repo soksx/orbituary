@@ -1,0 +1,29 @@
+---
+name: Create MicroOS Snapshots
+
+on:
+  workflow_dispatch:
+
+jobs:
+  CreateSnapshots:
+    name: Create Snapshots
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup `packer`
+        uses: hashicorp/setup-packer@main
+        id: setup
+      
+      - name: Run `packer init`
+        id: init
+        run: "packer init ./image/hcloud-microos-snapshots.pkr.hcl"
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HETZNER_K3S_API_KEY }}
+
+      - name: Run `packer build`
+        id: build
+        run: "packer build ./image/hcloud-microos-snapshots.pkr.hcl"
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HETZNER_K3S_API_KEY }}
