@@ -39,6 +39,8 @@ jobs:
             ssh_public_key = "${{ secrets.SSH_PUBLIC_KEY }}"
             hcloud_token = "${{ secrets.HETZNER_K3S_API_KEY }}"
             github_token = "${{ secrets.GH_PACKAGE_TOKEN }}"
+            cloudflare_api_token = ${{ secrets.CF_DNS_API_TOKEN }}"
+            cloudflare_zone_id = ${{ secrets.CF_DNS_ZONE_ID }}"
             EOF
           working-directory: terraform
 

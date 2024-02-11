@@ -91,48 +91,13 @@ module "kube-hetzner" {
 
   create_kubeconfig = false
 }
-provider "hcloud" {
-  token = var.hcloud_token
-}
-
-terraform {
-  required_version = ">= 1.5.0"
-  required_providers {
-    hcloud = {
-      source  = "hetznercloud/hcloud"
-      version = ">= 1.43.0"
-    }
-  }
-
-  backend "s3" {
-    bucket = "terraform-state"
-    key    = "orbituary/terraform.tfstate"
-    region = "us-east-1"
-
-    skip_credentials_validation = true
-    skip_region_validation = true
-    skip_requesting_account_id  = true
-    skip_metadata_api_check     = true
-    skip_s3_checksum = true
-  }
-}
 
 output "kubeconfig" {
   value     = module.kube-hetzner.kubeconfig
   sensitive = true
 }
 
-variable "hcloud_token" {
-  type      = string
-  sensitive = true
-}
-
-variable "github_token" {
-  type      = string
-  sensitive = true
-}
-
-variable "ssh_public_key" {
-  type      = string
+output "ingress_public_ipv4" {
+  value     = module.kube-hetzner.ingress_public_ipv4
   sensitive = true
 }
