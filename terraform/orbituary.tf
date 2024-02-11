@@ -10,7 +10,7 @@ module "kube-hetzner" {
 
   source = "kube-hetzner/kube-hetzner/hcloud"
 
-  ssh_public_key = 
+  ssh_public_key = var.ssh_public_key
   ssh_private_key = null
 
   network_region = "eu-central"
@@ -42,6 +42,7 @@ module "kube-hetzner" {
 
   load_balancer_type     = "lb11"
   load_balancer_location = "fsn1"
+  lb_hostname = "k3s.sok.sx"
 
   dns_servers = [
     "1.1.1.1",
@@ -74,10 +75,6 @@ module "kube-hetzner" {
     "2c0f:f248::/32"
   ]
 
-  lb_hostname = "k3s.sok.sx"
-  
-  load_balancer_type     = "lb11"
-  load_balancer_location = "fsn1"
   // firewall_ssh_source = null
 
   k3s_registries = <<-EOT
@@ -94,37 +91,13 @@ module "kube-hetzner" {
 
   create_kubeconfig = false
 }
-provider "hcloud" {
-  token = var.hcloud_token
-}
-
-terraform {
-  required_version = ">= 1.5.0"
-  required_providers {
-    hcloud = {
-      source  = "hetznercloud/hcloud"
-      version = ">= 1.43.0"
-    }
-  }
-}
 
 output "kubeconfig" {
   value     = module.kube-hetzner.kubeconfig
   sensitive = true
 }
 
-variable "hcloud_token" {
-  type      = string
+output "ingress_public_ipv4" {
+  value     = module.kube-hetzner.ingress_public_ipv4
   sensitive = true
-}
-
-variable "github_token" {
-  type      = string
-  sensitive = true
-}
-
-variable "ssh_public_key" {
-  type      = string
-  sensitive = true
-  default   = file("~/.ssh/id_ed25519.pub")
 }

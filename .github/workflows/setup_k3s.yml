@@ -7,7 +7,7 @@ on:
 
 jobs:
   SetupK3sCluster:
-    name: Create Snapshots
+    name: Setup K3s
     runs-on: ubuntu-latest
 
     steps:
@@ -18,16 +18,29 @@ jobs:
           with:
             terraform_wrapper: false
 
+        - name: Set Terraform background variables
+          run: |
+            tee endpoints-s3.tfvars <<EOF
+              endpoints = {
+                s3 = "${{ secrets.CF_S3_ENDPOINT}}"
+              }
+              access_key = "${{ secrets.CF_ACCESS_TOKEN }}"
+              secret_key = "${{ secrets.CF_SECRET_TOKEN }}"
+            EOF
+          working-directory: terraform
+
         - name: Terraform Init
-          run: terraform init  -upgrade
+          run: terraform init -backend-config="endpoints-s3.tfvars" -upgrade
           working-directory: terraform
 
         - name: Set Terraform variables
           run: |
             tee terraform.tfvars <<EOF
-            ssh_public_key = "$(curl --request GET --url https://github.com/soksx.keys)"
+            ssh_public_key = "${{ secrets.SSH_PUBLIC_KEY }}"
             hcloud_token = "${{ secrets.HETZNER_K3S_API_KEY }}"
             github_token = "${{ secrets.GH_PACKAGE_TOKEN }}"
+            cloudflare_api_token = "${{ secrets.CF_DNS_API_TOKEN }}"
+            cloudflare_zone_id = "${{ secrets.CF_DNS_ZONE_ID }}"
             EOF
           working-directory: terraform
 
@@ -47,12 +60,9 @@ jobs:
         - name: Terraform set secrets
           id: terraform_secrets
           run: |
-            $kube_config=$((terraform output --raw kubeconfig | base64))
-            $tf_state=$((echo terraform.tfstate | base64))
+            kube_config=$(terraform output --raw kubeconfig | base64 -w 0)
             echo "::add-mask::$kube_config"
             echo "kube_config=$kube_config" >> $GITHUB_OUTPUT
-            echo "::add-mask::$tf_state"
-            echo "tf_state=$tf_state" >> $GITHUB_OUTPUT
           working-directory: terraform
         
         - name: Add kube_config secret
@@ -60,11 +70,4 @@ jobs:
           with:
             name: KUBE_CONFIG
             value: ${{ steps.terraform_secrets.outputs.kube_config }}
-            pa_token: ${{ secrets.GITHUB_TOKEN }}
-
-        - name: Add tf_state secret
-          uses: gliech/create-github-secret-action@v1
-          with:
-            name: TF_STATE
-            value: ${{ steps.terraform_secrets.outputs.tf_state }}
-            pa_token: ${{ secrets.GITHUB_TOKEN }}
+            pa_token: ${{ secrets.GH_SECRETS_TOKEN }}
