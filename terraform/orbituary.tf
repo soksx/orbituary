@@ -107,11 +107,8 @@ terraform {
   backend "s3" {
     bucket = "terraform-state"
     key    = "orbituary/terraform.tfstate"
-    endpoints = { s3 = var.cloudflare_s3_endpoint }
     region = "us-east-1"
 
-    access_key = var.cloudflare_access_key
-    secret_key = var.cloudflare_secret_key
     skip_credentials_validation = true
     skip_region_validation = true
     skip_requesting_account_id  = true
@@ -136,21 +133,6 @@ variable "github_token" {
 }
 
 variable "ssh_public_key" {
-  type      = string
-  sensitive = true
-}
-
-variable "cloudflare_access_key" {
-  type      = string
-  sensitive = true
-}
-
-variable "cloudflare_secret_key" {
-  type      = string
-  sensitive = true
-}
-
-variable "cloudflare_s3_endpoint" {
   type      = string
   sensitive = true
 }
