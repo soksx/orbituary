@@ -10,7 +10,7 @@ module "kube-hetzner" {
 
   source = "kube-hetzner/kube-hetzner/hcloud"
 
-  ssh_public_key = 
+  ssh_public_key = var.ssh_public_key
   ssh_private_key = null
 
   network_region = "eu-central"
@@ -42,6 +42,7 @@ module "kube-hetzner" {
 
   load_balancer_type     = "lb11"
   load_balancer_location = "fsn1"
+  lb_hostname = "k3s.sok.sx"
 
   dns_servers = [
     "1.1.1.1",
@@ -74,10 +75,6 @@ module "kube-hetzner" {
     "2c0f:f248::/32"
   ]
 
-  lb_hostname = "k3s.sok.sx"
-  
-  load_balancer_type     = "lb11"
-  load_balancer_location = "fsn1"
   // firewall_ssh_source = null
 
   k3s_registries = <<-EOT

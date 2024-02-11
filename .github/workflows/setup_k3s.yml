@@ -7,7 +7,7 @@ on:
 
 jobs:
   SetupK3sCluster:
-    name: Create Snapshots
+    name: Setup K3s
     runs-on: ubuntu-latest
 
     steps:
