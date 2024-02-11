@@ -4,15 +4,14 @@
 packer {
   required_plugins {
     hcloud = {
-      version = ">= 1.0.5"
-      source  = "github.com/hashicorp/hcloud"
+      version = ">= 1.45.0"
+      source  = "hetznercloud/hcloud"
     }
   }
 }
 
 variable "hcloud_token" {
   type      = string
-  default   = env("HCLOUD_TOKEN")
   sensitive = true
 }
 
