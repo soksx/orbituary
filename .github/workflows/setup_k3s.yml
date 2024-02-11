@@ -47,8 +47,8 @@ jobs:
         - name: Terraform set secrets
           id: terraform_secrets
           run: |
-            $kube_config=$((terraform output --raw kubeconfig | base64))
-            $tf_state=$((echo terraform.tfstate | base64))
+            $kube_config=$(terraform output --raw kubeconfig | base64)
+            $tf_state=$(echo terraform.tfstate | base64)
             echo "::add-mask::$kube_config"
             echo "kube_config=$kube_config" >> $GITHUB_OUTPUT
             echo "::add-mask::$tf_state"
