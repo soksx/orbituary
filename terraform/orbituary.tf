@@ -126,5 +126,4 @@ variable "github_token" {
 variable "ssh_public_key" {
   type      = string
   sensitive = true
-  default   = file("~/.ssh/id_ed25519.pub")
 }
