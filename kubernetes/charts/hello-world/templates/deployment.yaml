@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-world
+  labels:
+    app: hello-world
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-world
+  template:
+    metadata:
+      labels:
+        app: hello-world
+    spec:
+      containers:
+      - name: hello
+        image: nginxdemos/hello
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: 10Mi
+            cpu: 10m
+          limits:
+            memory: 10Mi
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            port: 80
+            path: /
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 4
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            port: 80
+            path: /
+          initialDelaySeconds: 4
+          periodSeconds: 5
+          timeoutSeconds: 2
+          successThreshold: 1
+          failureThreshold: 2
