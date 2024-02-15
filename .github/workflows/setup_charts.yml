@@ -23,3 +23,55 @@ jobs:
             ${{ secrets.KUBE_CONFIG }}
           EOF
           export KUBECONFIG=$kube_config_path
+
+      - name: Set common variables
+        run: |
+          $variables = @{
+            hello_world_host = "k3s.${{ vars.HOST }}"
+            main_host = "${{ vars.HOST }}"
+            auth_host = "auth.${{ vars.HOST }}"
+            auth_url = "http://oauth2-proxy.oauth2-proxy.svc.cluster.local/oauth2/auth"
+            auth_signin = "https://auth.${{ vars.HOST }}/oauth2/start?rd=\`$scheme://\`$host\`$request_uri"
+          }
+          $variables.Keys | ForEach-Object {
+            $key = $_
+            $value = $variables[$key]
+            "$key=$value" >> $env:GITHUB_ENV
+          }
+        shell: pwsh
+
+      - name: Install certificate-issuers
+        run: |
+          helm upgrade --install --wait --atomic --debug \
+            certificate-issuers . \
+            --namespace cert-manager \
+            --set letsEncrypt.email="${{ vars.EMAIL }}"
+        working-directory: kubernetes/charts/certificate-issuers
+
+      - name: Install hello-world
+        run: |
+          helm upgrade --install --wait --atomic --debug \
+            hello-world . \
+            --namespace default \
+            --set host="${{ env.hello_world_host }}"
+        working-directory: kubernetes/charts/hello-world
+
+      - name: Install oauth2-proxy
+        run: |
+          helm upgrade --install --wait --atomic --debug \
+            oauth2-proxy oauth2-proxy \
+            --repo https://oauth2-proxy.github.io/manifests \
+            --namespace oauth2-proxy \
+            --create-namespace \
+            --version 6.23.1 \
+            -f oauth2-proxy.yaml \
+            --set config.clientID="${{ vars.OAUTH2_CLIENT_ID }}" \
+            --set config.clientSecret="${{ secrets.OAUTH2_CLIENT_SECRET }}" \
+            --set config.cookieSecret="${{ secrets.OAUTH2_COOKIE_SECRET }}" \
+            --set authenticatedEmailsFile.restricted_access="${{ vars.EMAIL }}" \
+            --set ingress.hosts[0]="${{ env.auth_host }}" \
+            --set ingress.tls[0].hosts[0]="${{ env.auth_host }}" \
+            --set extraArgs.whitelist-domain=".${{ vars.HOST }}" \
+            --set extraArgs.cookie-domain=".${{ vars.HOST }}"
+        working-directory: kubernetes/releases
+
