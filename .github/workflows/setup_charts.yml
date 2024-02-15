@@ -1,0 +1,25 @@
+---
+name: Setup Helm charts
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Setup K3s cluster"]
+    types:
+      - completed
+
+jobs:
+  SetupHelmCharts:
+    name: Setup K3s
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set Kubernetes context
+        run: |
+          $kube_config_path="$RUNNER_TEMP/kubeconfig.yaml"
+          cat << EOF > $kube_config_path
+            ${{ secrets.KUBE_CONFIG }}
+          EOF
+          export KUBECONFIG=$kube_config_path
