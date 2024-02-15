@@ -18,11 +18,8 @@ jobs:
 
       - name: Set Kubernetes context
         run: |
-          $kube_config_path="$RUNNER_TEMP/kubeconfig.yaml"
-          cat << EOF > $kube_config_path
-            ${{ secrets.KUBE_CONFIG }}
-          EOF
-          export KUBECONFIG=$kube_config_path
+          echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > $RUNNER_TEMP/kubeconfig.yaml
+          echo "KUBECONFIG=$RUNNER_TEMP/kubeconfig.yaml" >> $GITHUB_ENV
 
       - name: Set common variables
         run: |
